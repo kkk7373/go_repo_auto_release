@@ -7,7 +7,7 @@ jobs:
   release:
     runs-on: ubuntu-latest
     env:
-      VERSION: ${{ github.ref_name }}
+      VERSION: ${{ github.ref_name }} # tagがトリガーであればタグ名
     permissions:
       contents: write
     steps:
@@ -15,10 +15,11 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: "1.22"
-      - run: |
+      - run: | # RUNNER_TEMPはランナーが動く時に作る一時ワークスペース
           go build -ldflags "-X main.version=${VERSION}" \
             -o "${RUNNER_TEMP}/example" go/example/main.go
-      - run: |
+      - run:
+          | # release create {tag名}　なければその場の最新のコミットにタグがつけられる。
           gh release create "${VERSION}" --title "${VERSION}" --generate-notes
           gh release upload "${VERSION}" "${RUNNER_TEMP}/example"
         env:
